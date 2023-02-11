@@ -15,13 +15,6 @@ public class HeaderTest{
         BufferedReader br = new BufferedReader(new StringReader(line));
         Header header = new Header(br);
         assertThat(header.getMethod(), is("GET"));
-    }
-
-    @Test
-    public void url(){
-        String line = "GET /index.html HTTP/1.1";
-        BufferedReader br = new BufferedReader(new StringReader(line));
-        Header header = new Header(br);
         assertThat(header.getRequestPath(), is("/index.html"));
     }
 
@@ -33,7 +26,7 @@ public class HeaderTest{
     }
 
     @Test
-    public void parseRequestPath(){
+    public void parseRequestParam(){
         String line = "GET /user/create?userId=id&password=pw&name=nm&email=em HTTP/1.1";
         BufferedReader br = new BufferedReader(new StringReader(line));
         Header header = new Header(br);
@@ -44,7 +37,20 @@ public class HeaderTest{
     }
 
     @Test
-    public void post(){
+    public void postHeader(){
+        StringBuilder sb = new StringBuilder();
+        sb.append("POST /user/create HTTP/1.1\r\n");
+        sb.append("Content-Length: 59\r\n");
+        sb.append("\r\n");
+        sb.append("userId=javajigi&password=password&name=JaeSung\r\n");
+        BufferedReader br = new BufferedReader(new StringReader(sb.toString()));
+        Header header = new Header(br);
+        assertThat(header.getMethod(), is("POST"));
+        assertThat(header.getRequestPath(), is("/user/create"));
+    }
+
+    @Test
+    public void parsePostBody(){
         StringBuilder sb = new StringBuilder();
         sb.append("POST /user/create HTTP/1.1\r\n");
         sb.append("Content-Length: 59\r\n");

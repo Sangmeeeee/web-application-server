@@ -27,7 +27,7 @@ public class RequestHandler extends Thread {
             BufferedReader br = new BufferedReader(new InputStreamReader(in));
             DataOutputStream dos = new DataOutputStream(out);
             Header header = new Header(br);
-
+            
             if("GET".equals(header.getMethod())){
                 byte[] body = Files.readAllBytes(new File("./webapp" + header.getRequestPath()).toPath());
                 response200Header(dos, body.length);
@@ -36,6 +36,7 @@ public class RequestHandler extends Thread {
                 if("/user/create".equals(header.getRequestPath())){
                     User user = new User(header);
                     DataBase.addUser(user);
+                    response302Header(dos, "/index.html");
                 }
             }
         } catch (IOException e) {
@@ -50,6 +51,16 @@ public class RequestHandler extends Thread {
             dos.writeBytes("Content-Length: " + lengthOfBodyContent + "\r\n");
             dos.writeBytes("\r\n");
         } catch (IOException e) {
+            log.error(e.getMessage());
+        }
+    }
+
+    private void response302Header(DataOutputStream dos, String location){
+        try{
+            dos.writeBytes("HTTP/1.1 302 Found \r\n");
+            dos.writeBytes("Location: " + location + "\r\n");
+            dos.flush();
+        } catch (IOException e){
             log.error(e.getMessage());
         }
     }

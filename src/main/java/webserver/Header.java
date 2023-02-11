@@ -7,45 +7,56 @@ import util.HttpRequestUtils;
 import util.IOUtils;
 
 import java.io.BufferedReader;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
 @Getter
 public class Header {
     private static final Logger log = LoggerFactory.getLogger(Header.class);
-    String method;
-    String requestPath;
-    Map<String, String> params;
-    Map<String, String> headers;
+    private String method;
+    private String requestPath;
+    private Map<String, String> params;
+    private Map<String, String> headers = new HashMap<>();
 
-    public Header(BufferedReader br) throws HeaderException {
+    public Header(BufferedReader br) {
         try {
-            String line = br.readLine();
-            String[] token = line.split(" ");
-            String url = token[1];
-            this.method = token[0];
-
-            headers = new HashMap<>();
-            while (true) {
-                line = br.readLine();
-                if("".equals(line) || line == null) break;
-                int index = line.indexOf(":");
-                headers.put(line.substring(0, index), line.substring(index + 1).trim());
-            }
-
-            if("POST".equals(this.method)){
-                String query = IOUtils.readData(br, Integer.parseInt(headers.get("Content-Length")));
-                params = HttpRequestUtils.parseQueryString(query);
-            }else if("GET".equals(this.method)){
-                int index = url.indexOf("?");
-                if(index != -1) {
-                    this.requestPath = url.substring(0, index);
-                    params = HttpRequestUtils.parseQueryString(url.substring(index + 1));
-                }else
-                    this.requestPath = url;
-            }
+            parseFirstLine(br);
+            parseRequest(br);
+            parsePostBody(br);
         } catch (Exception e) {
             throw new HeaderException();
+        }
+    }
+
+    private void parseFirstLine(BufferedReader br) throws IOException {
+        String[] token = br.readLine().split(" ");
+        this.method = token[0];
+        this.requestPath = token[1];
+        if("GET".equals(this.method)){
+            int index = this.requestPath.indexOf("?");
+            if(index != -1) {
+                params = HttpRequestUtils.parseQueryString(this.requestPath.substring(index + 1));
+                this.requestPath = this.requestPath.substring(0, index);
+            }
+        }
+    }
+
+    private void parseRequest(BufferedReader br) throws IOException{
+        int index;
+        String line;
+        while (true) {
+            line = br.readLine();
+            if("".equals(line) || line == null) break;
+            index = line.indexOf(":");
+            headers.put(line.substring(0, index), line.substring(index + 1).trim());
+        }
+    }
+
+    private void parsePostBody(BufferedReader br) throws IOException{
+        if("POST".equals(this.method)){
+            String query = IOUtils.readData(br, Integer.parseInt(headers.get("Content-Length")));
+            params = HttpRequestUtils.parseQueryString(query);
         }
     }
 }
