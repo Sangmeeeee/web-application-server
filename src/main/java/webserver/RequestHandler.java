@@ -32,9 +32,19 @@ public class RequestHandler extends Thread {
             Header header = new Header(br);
             
             if("GET".equals(header.getMethod())){
-                byte[] body = Files.readAllBytes(new File("./webapp" + header.getRequestPath()).toPath());
-                response200Header(dos, body.length);
-                responseBody(dos, body);
+                if("/user/list".equals(header.getRequestPath())){
+                    if(Objects.isNull(header.getCookies().get("logined")) || !Boolean.parseBoolean(header.getCookies().get("logined"))){
+                        response302Header(dos, "/index.html");
+                    }else{
+                        byte[] body = responseUserList();
+                        response200Header(dos, body.length);
+                        responseBody(dos, body);
+                    }
+                }else {
+                    byte[] body = Files.readAllBytes(new File("./webapp" + header.getRequestPath()).toPath());
+                    response200Header(dos, body.length);
+                    responseBody(dos, body);
+                }
             }else if("POST".equals(header.getMethod())){
                 if("/user/create".equals(header.getRequestPath())){
                     User user = new User(header);
@@ -102,5 +112,13 @@ public class RequestHandler extends Thread {
         } catch (IOException e) {
             log.error(e.getMessage());
         }
+    }
+
+    private byte[] responseUserList(){
+        StringBuilder sb = new StringBuilder();
+        DataBase.findAll().forEach(user -> {
+            sb.append(user.getUserId() + ", "  + user.getName());
+        });
+        return sb.toString().getBytes();
     }
 }

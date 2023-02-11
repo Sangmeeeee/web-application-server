@@ -40,8 +40,10 @@
 * 응답 status code가 302라도 cookie 설정이 가능하다.
   * 하지만 cookie의 도메인을 보면 localhost라고 나와있기 때문에 만약 302 redirection으로 다른 도메인에 접근한다면 cookie는 사용할 수 없다.
 
-### 요구사항 6 - stylesheet 적용
-* 
+### 요구사항 6 - 사용자 목록 출력
+* 편의를 위해 User들의 정보만 간단하게 StringBuilder에 추가했지만 만약 동적인 html 화면을 만든다면 힘들것이다.
+* RequestHandler에서 담당하는 역할이 많아지고 있다.
+  * 이는 리팩토링을 준비해야하며 내가 생각하는 이상적인 리팩토링은 Request와 Response를 따로 객체로 관리하고 두 가지 객체를 관리하여 사용자에게 요청과 응답을 받아 처리하는 객체를 만들어준다.
 
 ### heroku 서버에 배포 후
 * 

@@ -18,6 +18,7 @@ public class Header {
     private String requestPath;
     private Map<String, String> params;
     private Map<String, String> headers = new HashMap<>();
+    private Map<String, String> cookies;
 
     public Header(BufferedReader br) {
         try {
@@ -49,7 +50,12 @@ public class Header {
             line = br.readLine();
             if("".equals(line) || line == null) break;
             index = line.indexOf(":");
-            headers.put(line.substring(0, index), line.substring(index + 1).trim());
+            String key = line.substring(0, index);
+            String value = line.substring(index + 1).trim();
+            if("Cookie".equals(key)){
+                cookies = HttpRequestUtils.parseCookies(value);
+            }else
+                headers.put(key, value);
         }
     }
 
