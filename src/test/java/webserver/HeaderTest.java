@@ -22,7 +22,7 @@ public class HeaderTest{
         String line = "GET /index.html HTTP/1.1";
         BufferedReader br = new BufferedReader(new StringReader(line));
         Header header = new Header(br);
-        assertThat(header.getUrl(), is("/index.html"));
+        assertThat(header.getRequestPath(), is("/index.html"));
     }
 
     @Test(expected = HeaderException.class)
@@ -30,5 +30,16 @@ public class HeaderTest{
         String line = "";
         BufferedReader br = new BufferedReader(new StringReader(line));
         Header header = new Header(br);
+    }
+
+    @Test
+    public void parseRequestPath(){
+        String line = "GET /user/create?userId=id&password=pw&name=nm&email=em HTTP/1.1";
+        BufferedReader br = new BufferedReader(new StringReader(line));
+        Header header = new Header(br);
+        assertThat(header.getParams().get("userId"), is("id"));
+        assertThat(header.getParams().get("password"), is("pw"));
+        assertThat(header.getParams().get("name"), is("nm"));
+        assertThat(header.getParams().get("email"), is("em"));
     }
 }

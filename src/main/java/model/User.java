@@ -1,5 +1,7 @@
 package model;
 
+import webserver.Header;
+
 public class User {
     private String userId;
     private String password;
@@ -11,6 +13,13 @@ public class User {
         this.password = password;
         this.name = name;
         this.email = email;
+    }
+
+    public User(Header header){
+        this.userId = header.getParams().get("userId");
+        this.password = header.getParams().get("password");
+        this.name = header.getParams().get("name");
+        this.email = header.getParams().get("email");
     }
 
     public String getUserId() {

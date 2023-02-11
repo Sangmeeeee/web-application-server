@@ -4,6 +4,8 @@ import java.io.*;
 import java.net.Socket;
 import java.nio.file.Files;
 
+import db.DataBase;
+import model.User;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -27,8 +29,11 @@ public class RequestHandler extends Thread {
             Header header = new Header(br);
 
             if("GET".equals(header.getMethod())){
-                if("/index.html".equals(header.getUrl())){
-                    byte[] body = Files.readAllBytes(new File("./webapp" + header.getUrl()).toPath());
+                if("/user/create".equals(header.getRequestPath())){
+                    User user = new User(header);
+                    DataBase.addUser(user);
+                }else {
+                    byte[] body = Files.readAllBytes(new File("./webapp" + header.getRequestPath()).toPath());
                     response200Header(dos, body.length);
                     responseBody(dos, body);
                 }

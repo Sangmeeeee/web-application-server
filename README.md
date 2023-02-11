@@ -20,7 +20,9 @@
   * 또한 header를 만들며 나오는 모든 에러는 종류에 상관없이 header가 만들어지지 않았음을 의미하기 때문에 RuntimeException으로 해결해주었다. RuntimeException으로 처리될 경우 사용자는 응답 시간을 기다리다가 자동적으로 설정한 시간에 맞춰 conneciton을 끊게 된다.
 
 ### 요구사항 2 - get 방식으로 회원가입
-* 
+* User는 header의 쿼리스트링을 통해 만들 수 있다.
+  * 여기서 User를 만드는 객체는 User 스스로이다. Header로 부터 message를 받아 처리한다.
+    * DDD적으로 설계하기 위한 연습이라고 생각한다.
 
 ### 요구사항 3 - post 방식으로 회원가입
 * 
