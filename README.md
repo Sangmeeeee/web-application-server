@@ -37,7 +37,8 @@
   * 기존 URL에 컨텐츠 URL을 추가할때 사용하면 유용
 
 ### 요구사항 5 - cookie
-* 
+* 응답 status code가 302라도 cookie 설정이 가능하다.
+  * 하지만 cookie의 도메인을 보면 localhost라고 나와있기 때문에 만약 302 redirection으로 다른 도메인에 접근한다면 cookie는 사용할 수 없다.
 
 ### 요구사항 6 - stylesheet 적용
 * 

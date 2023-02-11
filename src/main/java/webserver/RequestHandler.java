@@ -3,6 +3,9 @@ package webserver;
 import java.io.*;
 import java.net.Socket;
 import java.nio.file.Files;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Objects;
 
 import db.DataBase;
 import model.User;
@@ -37,6 +40,18 @@ public class RequestHandler extends Thread {
                     User user = new User(header);
                     DataBase.addUser(user);
                     response302Header(dos, "/index.html");
+                }else if("/user/login".equals(header.getRequestPath())){
+                    String userId = header.getParams().get("userId");
+                    String password = header.getParams().get("password");
+                    User user = DataBase.findUserById(userId);
+                    Map<String, String> cookies = new HashMap<>();
+                    if(Objects.isNull(user) || !password.equals(user.getPassword())){
+                        cookies.put("test", "a");
+                        response302Header(dos, "/user/login_failed.html", cookies);
+                    }else{
+                        cookies.put("logined", "true");
+                        response302Header(dos, "/index.html", cookies);
+                    }
                 }
             }
         } catch (IOException e) {
@@ -59,6 +74,21 @@ public class RequestHandler extends Thread {
         try{
             dos.writeBytes("HTTP/1.1 302 Found \r\n");
             dos.writeBytes("Location: " + location + "\r\n");
+            dos.flush();
+        } catch (IOException e){
+            log.error(e.getMessage());
+        }
+    }
+
+    private void response302Header(DataOutputStream dos, String location, Map<String, String> cookies){
+        StringBuilder sb = new StringBuilder();
+        for(String key : cookies.keySet())
+            sb.append(key + "=" + cookies.get(key) + "; ");
+
+        try{
+            dos.writeBytes("HTTP/1.1 302 Found \r\n");
+            dos.writeBytes("Location: " + location + "\r\n");
+            dos.writeBytes("Set-Cookie: " + sb.toString());
             dos.flush();
         } catch (IOException e){
             log.error(e.getMessage());
