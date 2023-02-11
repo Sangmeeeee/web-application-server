@@ -32,7 +32,11 @@ public class RequestHandler extends Thread {
             Header header = new Header(br);
             
             if("GET".equals(header.getMethod())){
-                if("/user/list".equals(header.getRequestPath())){
+                if(header.getRequestPath().endsWith(".css")){
+                    byte[] body = Files.readAllBytes(new File("./webapp/" + header.getRequestPath()).toPath());
+                    responseCssHeader(dos, body.length);
+                    responseBody(dos, body);
+                } else if("/user/list".equals(header.getRequestPath())){
                     if(Objects.isNull(header.getCookies().get("logined")) || !Boolean.parseBoolean(header.getCookies().get("logined"))){
                         response302Header(dos, "/index.html");
                     }else{
@@ -73,6 +77,17 @@ public class RequestHandler extends Thread {
         try {
             dos.writeBytes("HTTP/1.1 200 OK \r\n");
             dos.writeBytes("Content-Type: text/html;charset=utf-8\r\n");
+            dos.writeBytes("Content-Length: " + lengthOfBodyContent + "\r\n");
+            dos.writeBytes("\r\n");
+        } catch (IOException e) {
+            log.error(e.getMessage());
+        }
+    }
+
+    private void responseCssHeader(DataOutputStream dos, int lengthOfBodyContent){
+        try {
+            dos.writeBytes("HTTP/1.1 200 OK \r\n");
+            dos.writeBytes("Content-Type: text/css\r\n");
             dos.writeBytes("Content-Length: " + lengthOfBodyContent + "\r\n");
             dos.writeBytes("\r\n");
         } catch (IOException e) {
