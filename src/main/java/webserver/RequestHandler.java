@@ -29,13 +29,13 @@ public class RequestHandler extends Thread {
             Header header = new Header(br);
 
             if("GET".equals(header.getMethod())){
+                byte[] body = Files.readAllBytes(new File("./webapp" + header.getRequestPath()).toPath());
+                response200Header(dos, body.length);
+                responseBody(dos, body);
+            }else if("POST".equals(header.getMethod())){
                 if("/user/create".equals(header.getRequestPath())){
                     User user = new User(header);
                     DataBase.addUser(user);
-                }else {
-                    byte[] body = Files.readAllBytes(new File("./webapp" + header.getRequestPath()).toPath());
-                    response200Header(dos, body.length);
-                    responseBody(dos, body);
                 }
             }
         } catch (IOException e) {

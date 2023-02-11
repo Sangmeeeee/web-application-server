@@ -25,7 +25,8 @@
     * DDD적으로 설계하기 위한 연습이라고 생각한다.
 
 ### 요구사항 3 - post 방식으로 회원가입
-* 
+* POST 방식으로 Body를 전달할때, 왜 Content-Length가 필요한가?
+  * Content-Length : message의 크기를 바이트 단위로 나타낸다. 이는 인코딩에 상관없이 크기를 표현할 수 있다.
 
 ### 요구사항 4 - redirect 방식으로 이동
 * 
