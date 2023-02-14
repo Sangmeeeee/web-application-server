@@ -23,7 +23,8 @@ public class HttpRequest {
 
     public HttpRequest(InputStream in) {
         this.headers = new HashMap<>();
-        try (BufferedReader br = new BufferedReader(new InputStreamReader(in, "UTF-8"))){
+        try {
+            BufferedReader br = new BufferedReader(new InputStreamReader(in, "UTF-8"));
             String line = br.readLine();
             if(Objects.isNull(line))
                 return;

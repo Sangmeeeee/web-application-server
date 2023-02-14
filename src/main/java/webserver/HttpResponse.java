@@ -10,12 +10,12 @@ import java.util.Map;
 
 public class HttpResponse {
     private final Logger log = LoggerFactory.getLogger(HttpResponse.class);
-    private OutputStream out;
+    private DataOutputStream dos;
     private Map<String, String> headers;
 
     public HttpResponse(OutputStream out){
         headers = new HashMap<>();
-        this.out = out;
+        this.dos = new DataOutputStream(out);
     }
 
     public void addHeader(String key, String value) {
@@ -24,13 +24,32 @@ public class HttpResponse {
 
     public void forward(String url) {
         try {
-            DataOutputStream dos = new DataOutputStream(out);
             byte[] body = Files.readAllBytes(new File("./webapp" + url).toPath());
             if(isCssResponse(url))
-                responseCssHeader(dos, body.length);
+                responseCssHeader(body.length);
+            else if(isJsResponse(url))
+                responseJsHeader(body.length);
             else
-                response200Header(dos, body.length);
-            responseBody(dos, body);
+                response200Header(body.length);
+            responseBody(body);
+        }catch (Exception e) {
+            log.error(e.getMessage());
+        }
+    }
+
+    public void forwardBody(String str) {
+        try{
+            byte[] body = str.getBytes();
+            response200Header(body.length);
+            responseBody(body);
+        }catch (Exception e){
+            log.error(e.getMessage());
+        }
+    }
+
+    public void sendRedirect(String location) {
+        try {
+            response302Header(location);
         }catch (Exception e) {
             log.error(e.getMessage());
         }
@@ -40,44 +59,47 @@ public class HttpResponse {
         return url.endsWith(".css");
     }
 
-    private void responseCssHeader(DataOutputStream dos, int lengthOfBodyContent) throws IOException {
+    private boolean isJsResponse(String url){
+        return url.endsWith(".js");
+    }
+
+    private void responseCssHeader(int lengthOfBodyContent) throws IOException {
         dos.writeBytes("HTTP/1.1 200 OK \r\n");
         dos.writeBytes("Content-Type: text/css\r\n");
         dos.writeBytes("Content-Length: " + lengthOfBodyContent + "\r\n");
         dos.writeBytes("\r\n");
     }
 
-    private void response200Header(DataOutputStream dos, int lengthOfBodyContent) throws IOException {
+    private void response200Header(int lengthOfBodyContent) throws IOException {
         dos.writeBytes("HTTP/1.1 200 OK \r\n");
         dos.writeBytes("Content-Type: text/html;charset=utf-8\r\n");
         dos.writeBytes("Content-Length: " + lengthOfBodyContent + "\r\n");
-        addHeaderToResponse(dos);
+        addHeaderToResponse();
         dos.writeBytes("\r\n");
     }
 
-    private void addHeaderToResponse(DataOutputStream dos) throws IOException {
+    private void responseJsHeader(int lengthOfBodyContent) throws IOException{
+        dos.writeBytes("HTTP/1.1 200 OK \r\n");
+        dos.writeBytes("Content-Type: application/javascript\r\n");
+        dos.writeBytes("Content-Length: " + lengthOfBodyContent + "\r\n");
+        dos.writeBytes("\r\n");
+    }
+
+    private void addHeaderToResponse() throws IOException {
         for(String key : headers.keySet())
             dos.writeBytes(key + ": " + headers.get(key) + "\r\n");
     }
 
-    private void responseBody(DataOutputStream dos, byte[] body) throws IOException{
+    private void responseBody(byte[] body) throws IOException{
         dos.write(body, 0, body.length);
+        dos.writeBytes("\r\n");
         dos.flush();
     }
 
-    public void sendRedirect(String location) {
-        try {
-            DataOutputStream dos = new DataOutputStream(out);
-            response302Header(dos, location);
-        }catch (Exception e) {
-            log.error(e.getMessage());
-        }
-    }
-
-    private void response302Header(DataOutputStream dos, String location) throws IOException {
+    private void response302Header(String location) throws IOException {
         dos.writeBytes("HTTP/1.1 302 Redirect \r\n");
         dos.writeBytes("Location: " + location + " \r\n");
-        addHeaderToResponse(dos);
+        addHeaderToResponse();
         dos.writeBytes("\r\n");
     }
 }
