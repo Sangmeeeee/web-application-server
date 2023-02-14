@@ -1,5 +1,6 @@
 package webserver;
 
+import controller.Controller;
 import db.DataBase;
 import http.HttpRequest;
 import http.HttpResponse;
@@ -33,63 +34,21 @@ public class RequestHandler extends Thread {
             // TODO 사용자 요청에 대한 처리는 이 곳에 구현하면 된다.
             HttpRequest request = new HttpRequest(in);
             HttpResponse response = new HttpResponse(out);
-            String path = request.getPath();
 
-            if("/user/create".equals(path)){
-                createUser(request, response);
-            }else if("/user/login".equals(path)){
-                loginUser(request, response);
-            }else if("/user/list".equals(path)){
-                listUser(request, response);
+            Controller controller = RequestMapping.getController(request.getPath());
+            if(controller == null){
+                response.forward(getDefaultPath(request.getPath()));
             }else {
-                response.forward(request.getPath());
+                controller.service(request, response);
             }
         } catch (IOException e) {
             log.error(e.getMessage());
         }
     }
 
-    private void createUser(HttpRequest request, HttpResponse response){
-        User user = new User(request.getParam("userId"), request.getParam("password"), request.getParam("name"), request.getParam("email"));
-        DataBase.addUser(user);
-        response.sendRedirect("/index.html");
-    }
-
-    private void loginUser(HttpRequest request, HttpResponse response){
-        User user = DataBase.findUserById(request.getParam("userId"));
-        if(user != null && user.getPassword().equals(request.getParam("password"))){
-            response.addHeader("Cookie", "logined=true");
-            response.sendRedirect("/index.html");
-        }else {
-            response.sendRedirect("/user/login_failed.html");
-        }
-    }
-
-    private void listUser(HttpRequest request, HttpResponse response){
-        if(!isLogin(request.getHeader("Cookie"))){
-            response.sendRedirect("/user/login.html");
-            return;
-        }
-        Collection<User> users = DataBase.findAll();
-        StringBuilder sb = new StringBuilder();
-        sb.append("<table border='1'>");
-        for(User user : users){
-            sb.append("<tr>");
-            sb.append("<td>" + user.getUserId() + "</td>");
-            sb.append("<td>" + user.getName() + "</td>");
-            sb.append("<td>" + user.getEmail() + "</td>");
-            sb.append("</tr>");
-        }
-        sb.append("</table>");
-        response.forwardBody(sb.toString());
-    }
-
-    private boolean isLogin(String line) {
-        String[] headerTokens = line.split(":");
-        Map<String, String> cookies = HttpRequestUtils.parseCookies(headerTokens[1].trim());
-        String value = cookies.get("logined");
-        if(value == null)
-            return false;
-        return Boolean.parseBoolean(value);
+    private String getDefaultPath(String path){
+        if(path.equals("/"))
+            return "/index.html";
+        return path;
     }
 }
