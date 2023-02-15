@@ -2,7 +2,9 @@ package http;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import session.HttpSession;
 import util.HttpRequestUtils;
+import util.HttpSessionUtils;
 import util.IOUtils;
 
 import java.io.BufferedReader;
@@ -40,6 +42,14 @@ public class HttpRequest {
         }catch (Exception e) {
             log.error(e.getMessage());
         }
+    }
+
+    public HttpSession getSession(){
+        return HttpSessionUtils.getSession(getCookies().getCookie("JSESSIONID"));
+    }
+
+    public HttpCookie getCookies(){
+        return new HttpCookie(getHeader("Cookie"));
     }
 
     public HttpMethod getMethod() {
